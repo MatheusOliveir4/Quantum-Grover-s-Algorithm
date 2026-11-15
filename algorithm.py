@@ -10,14 +10,14 @@ target_expression = lambda x: x == target
 
 state = np.full(N, 1 / sqrt(N), dtype=complex)
 
-mascara = np.fromiter(
+mask = np.fromiter(
     map(target_expression, range(N)),
     dtype=bool,
     count=N
 )
 
 oracle = lambda state: np.where(
-    mascara, -state, state
+    mask, -state, state
 )
 
 diffuser = lambda state: (
