@@ -1,5 +1,17 @@
+import random
 from functools import reduce
 from math import asin, sqrt, pi
+
+# Medição: sorteia a saída, cada número com sua probabilidade
+measure = lambda probabilities, shots: random.choices(
+    range(len(probabilities)), weights=probabilities, k=shots
+)
+
+# Conta quantas vezes cada posição saiu nos sorteios.
+count = lambda results: reduce(lambda aux, r: {**aux, r: aux.get(r, 0) + 1}, results, {})
+
+# Posição que mais saiu nos sorteios.
+most_frequent = lambda counts: max(counts, key=counts.get)
 
 # Soma todos os valores usando reduce (acumula um por um).
 soma = lambda values: reduce(lambda aux, x: aux + x, values, 0)
