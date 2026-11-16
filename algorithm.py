@@ -50,7 +50,7 @@ argmax = lambda values: reduce(
 qubits_for = lambda size: max(2, (size - 1).bit_length())
 
 # Quantas posições têm o target (soma dos True da máscara).
-count_solutions = lambda mask: soma(map(int, mask))
+count_solutions = lambda mask: len(tuple(filter(lambda marked: marked, mask)))
 
 # Número ideal de rodadas, calculado pelo ângulo inicial theta.
 iterations = lambda N, M: round(pi / (4 * asin(sqrt(M / N))) - 0.5)
