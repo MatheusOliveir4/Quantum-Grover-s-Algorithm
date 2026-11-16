@@ -1,57 +1,27 @@
-import numpy as np
 from functools import reduce
-from math import sqrt, asin, pi
+from math import asin, sqrt, pi
 
-n_qubits = 3
-N = 2 ** n_qubits
-target = 5
+soma = lambda values: reduce(lambda aux, x: aux + x, values, 0)
+media = lambda values: soma(values) / len(values)
 
-target_expression = lambda x: x == target
-
-state = np.full(N, 1 / sqrt(N), dtype=complex)
-
-mask = np.fromiter(
-    map(target_expression, range(N)),
-    dtype=bool,
-    count=N
+initial_state = lambda N: tuple(map(lambda _: 1 / sqrt(N), range(N)))
+create_mask = lambda array, target_expression, N: tuple(
+    map(lambda i: i < len(array) and target_expression(array[i]), range(N))
+)
+oracle = lambda mask: lambda state: tuple(
+    map(lambda pair: -pair[1] if pair[0] else pair[1], zip(mask, state))
+)
+diffuser = lambda state: (lambda m: tuple(map(lambda a: 2 * m - a, state)))(media(state))
+grover = lambda mask: lambda state: diffuser(oracle(mask)(state))
+probabilities_of = lambda state: tuple(map(lambda a: abs(a) ** 2, state))
+argmax = lambda values: reduce(
+    lambda best, i: i if values[i] > values[best] else best, range(len(values)), 0
 )
 
-oracle = lambda state: np.where(
-    mask, -state, state
-)
+qubits_for = lambda size: max(2, (size - 1).bit_length())
 
-diffuser = lambda state: (
-    2 * np.mean(state) - state
-)
+count_solutions = lambda mask: soma(map(int, mask))
 
-grover = lambda state: diffuser(oracle(state))
+iterations = lambda N, M: round(pi / (4 * asin(sqrt(M / N))) - 0.5)
 
-M = sum(map(target_expression, range(N)))
-
-theta = asin(sqrt(M / N))
-k = round(pi / (4 * theta) - 0.5)
-
-final_state = reduce(
-    lambda atual, _: grover(atual),
-    range(k),
-    state
-)
-
-probabilities = np.abs(final_state) ** 2
-solution = np.argmax(probabilities)
-
-print("Iteracoes:", k)
-print("Estado encontrado:", solution)
-print("Representacao binaria:",
-      format(solution, f"0{n_qubits}b"))
-print("Probabilidade de sucesso:",
-      f"{probabilities[solution] * 100:.2f}%")
-
-print("\nDistribuicao de probabilidades:")
-
-print("\n".join(map(
-    lambda item: (
-        f"|{item[0]:0{n_qubits}b}>: {item[1] * 100:.2f}%"
-    ),
-    enumerate(probabilities)
-)))
+run = lambda state, step, k: reduce(lambda atual, _: step(atual), range(k), state)
